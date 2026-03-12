@@ -26,17 +26,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* تنسيق كلاسيكي للورقة بدون تمدد عشوائي */
-        .a4-paper {
+        /* تثبيت صارم لحجم الورقة لمنع تشوه الـ PDF على الموبايل */
+        .a4-fixed {
+            width: 794px !important;
+            min-height: 1123px !important;
+            max-width: none !important;
             background: white;
             box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            position: relative;
-            max-width: 100%;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -83,6 +85,7 @@
 
             const [sure, setSure] = useState('');
             const [isGenerating, setIsGenerating] = useState(false);
+            const [previewPdf, setPreviewPdf] = useState(null); // حالة للنافذة المنبثقة الخاصة بالـ PDF
 
             useEffect(() => {
                 if (veriler.baslangic && veriler.bitis) {
@@ -120,44 +123,30 @@
                 return new Date(dateStr).toLocaleDateString('tr-TR', options);
             };
 
-            const pdfHazirlaVePaylas = async () => {
+            // الدالة المعدلة لتجهيز الـ PDF وفتح النافذة
+            const pdfHazirla = async () => {
                 setIsGenerating(true);
                 const element = document.getElementById('izin-formu-alani');
                 const dosyaAdi = `Izin_Talebi_${veriler.adSoyad ? veriler.adSoyad.replace(/\s+/g, '_') : 'Personel'}.pdf`;
 
                 const opt = {
-                    margin: [10, 0, 10, 0], // هوامش لضمان عدم الالتصاق بالحافة
+                    margin: 5,
                     filename: dosyaAdi,
-                    image: { type: 'jpeg', quality: 0.98 },
+                    image: { type: 'jpeg', quality: 1 },
                     html2canvas: { 
-                        scale: 2, // مقياس 2 كافٍ جداً ومستقر لمنع تقطيع الصفحات
+                        scale: 2, 
                         backgroundColor: '#ffffff', 
                         useCORS: true,
-                        scrollY: 0 // هذا السطر يحل مشكلة الفراغ في أعلى الـ PDF
+                        scrollY: 0 // لحل مشكلة الفراغ من الأعلى
                     },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
                 try {
                     const pdfWorker = html2pdf().set(opt).from(element);
-                    await pdfWorker.output('blob').then(async (pdfBlob) => {
-                        const file = new File([pdfBlob], dosyaAdi, { type: 'application/pdf' });
-                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-                        if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
-                            try {
-                                await navigator.share({
-                                    files: [file],
-                                    title: 'İzin Talep Formu',
-                                    text: `${veriler.adSoyad} - İzin Talep Formu (Lütfen Ekteki PDF'i inceleyiniz)`
-                                });
-                            } catch (error) {
-                                console.log('Paylaşım iptal edildi', error);
-                                pdfWorker.save();
-                            }
-                        } else {
-                            pdfWorker.save();
-                        }
+                    await pdfWorker.output('blob').then((pdfBlob) => {
+                        const url = URL.createObjectURL(pdfBlob);
+                        setPreviewPdf({ url, blob: pdfBlob, dosyaAdi });
                     });
                 } catch (error) {
                     console.error("Hata:", error);
@@ -167,8 +156,61 @@
                 }
             };
 
+            // وظيفة التنزيل المباشر
+            const indir = () => {
+                const link = document.createElement('a');
+                link.download = previewPdf.dosyaAdi;
+                link.href = previewPdf.url;
+                link.click();
+            };
+
+            // وظيفة المشاركة الفورية المضمونة على الموبايل
+            const paylas = async () => {
+                const file = new File([previewPdf.blob], previewPdf.dosyaAdi, { type: 'application/pdf' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'İzin Talep Formu',
+                            text: `${veriler.adSoyad} - İzin Talep Formu`
+                        });
+                    } catch (error) {
+                        console.log('Paylaşım iptal edildi', error);
+                    }
+                } else {
+                    alert("Cihazınız doğrudan PDF paylaşımını desteklemiyor. Lütfen indir butonunu kullanın.");
+                }
+            };
+
             return (
                 <div className="pt-4 md:pt-10 px-4">
+                    
+                    {/* النافذة المنبثقة للمشاركة الفورية */}
+                    {previewPdf && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
+                            <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl relative flex flex-col items-center animate-fade-in-up">
+                                <button onClick={() => setPreviewPdf(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
+                                    <i className="fa-solid fa-xmark"></i>
+                                </button>
+                                
+                                <i className="fa-solid fa-file-pdf text-6xl text-rose-500 mb-4"></i>
+                                <h3 className="text-xl font-bold text-slate-800 mb-1">PDF Hazır!</h3>
+                                <p className="text-xs text-slate-500 mb-6 text-center font-medium px-4">{previewPdf.dosyaAdi}</p>
+                                
+                                <div className="flex gap-3 w-full">
+                                    <button onClick={indir} className="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                                        <i className="fa-solid fa-download"></i> İndir
+                                    </button>
+                                    {navigator.canShare && (
+                                        <button onClick={paylas} className="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                                            <i className="fa-brands fa-whatsapp text-lg"></i> Paylaş
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="max-w-6xl mx-auto">
                         
                         <div className="bg-gradient-to-r from-slate-900 to-slate-700 rounded-t-2xl p-6 md:p-8 shadow-lg relative overflow-hidden">
@@ -188,9 +230,10 @@
 
                         <div className="bg-white shadow-xl rounded-b-2xl flex flex-col lg:flex-row border border-slate-100 mb-8">
                             
-                            <div className="w-full lg:w-5/12 p-6 md:p-8 lg:border-r border-slate-100 bg-slate-50/50">
+                            {/* لوحة التحكم */}
+                            <div className="w-full lg:w-4/12 p-6 md:p-8 lg:border-r border-slate-100 bg-slate-50/50">
                                 <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-200 pb-3">
-                                    <i className="fa-solid fa-keyboard text-brand-500"></i> Talep Bilgilerini Doldurun
+                                    <i className="fa-solid fa-keyboard text-brand-500"></i> Talep Bilgileri
                                 </h2>
                                 
                                 <div className="space-y-5">
@@ -224,104 +267,107 @@
                                     </div>
 
                                     <button 
-                                        onClick={pdfHazirlaVePaylas} 
+                                        onClick={pdfHazirla} 
                                         disabled={isGenerating}
-                                        className={`w-full mt-4 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-3 transition-all transform shadow-lg hover:shadow-xl group ${isGenerating ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-800 hover:bg-slate-900 hover:-translate-y-0.5'}`}>
+                                        className={`w-full mt-4 text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-3 transition-all transform shadow-lg hover:shadow-xl group ${isGenerating ? 'bg-slate-400 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700 hover:-translate-y-0.5'}`}>
                                         {isGenerating ? (
-                                            <><i className="fa-solid fa-spinner fa-spin"></i> PDF Hazırlanıyor...</>
+                                            <><i className="fa-solid fa-spinner fa-spin"></i> İşleniyor...</>
                                         ) : (
-                                            <><i className="fa-brands fa-whatsapp text-xl"></i> PDF Olarak Paylaş / İndir</>
+                                            <><i className="fa-solid fa-file-pdf text-xl"></i> İzin Belgesini Hazırla</>
                                         )}
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Right Column: PDF Preview */}
-                            <div className="w-full lg:w-7/12 p-6 md:p-8 flex justify-center bg-slate-100 overflow-hidden">
+                            {/* الحاوية التي تسمح بالتمرير على الموبايل لمنع ضغط الورقة */}
+                            <div className="w-full lg:w-8/12 p-4 md:p-8 bg-slate-100 overflow-x-auto">
                                 
-                                {/* تم إزالة كلاس flex و justify-between لضمان عدم التمدد وتجاوز صفحة واحدة */}
-                                <div id="izin-formu-alani" className="w-full bg-white a4-paper px-8 py-10 md:px-12 md:py-12 border border-slate-200 block">
+                                {/* ورقة A4 بأبعاد ثابتة تماماً */}
+                                <div id="izin-formu-alani" className="a4-fixed px-10 py-12 flex flex-col justify-between border border-slate-300">
                                     
-                                    <div className="flex justify-between items-center border-b-2 border-slate-800 pb-6 mb-8">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 bg-slate-800 rounded flex items-center justify-center text-white">
-                                                <i className="fa-solid fa-microchip text-2xl"></i>
+                                    <div>
+                                        <div className="flex justify-between items-center border-b-2 border-slate-800 pb-6 mb-8">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 bg-slate-800 rounded flex items-center justify-center text-white">
+                                                    <i className="fa-solid fa-microchip text-2xl"></i>
+                                                </div>
+                                                <div>
+                                                    <h2 className="text-xl font-black text-slate-800 tracking-tight">VTEKE ELEKTRONİK</h2>
+                                                    <p className="text-xs text-slate-500 font-medium tracking-widest">İNSAN KAYNAKLARI</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <h1 className="text-2xl font-black text-slate-800 uppercase tracking-wider">İzin Talep Formu</h1>
+                                                <p className="text-sm text-slate-500 mt-1">Tarih: {simdi.toLocaleDateString('tr-TR')}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-8 border border-slate-300 rounded-lg overflow-hidden">
+                                            <div className="bg-slate-100 px-4 py-3 border-b border-slate-300">
+                                                <h3 className="text-sm font-bold text-slate-700">Personel Bilgileri</h3>
+                                            </div>
+                                            <div className="grid grid-cols-2">
+                                                <div className="p-5 border-r border-slate-300">
+                                                    <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">Ad Soyad</p>
+                                                    <p className="font-bold text-slate-800 text-lg">{veriler.adSoyad || '..................................................'}</p>
+                                                </div>
+                                                <div className="p-5">
+                                                    <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">Departman / Bölüm</p>
+                                                    <p className="font-bold text-slate-800 text-lg">{veriler.departman || '..................................................'}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-8 border border-slate-300 rounded-lg overflow-hidden">
+                                            <div className="bg-slate-100 px-4 py-3 border-b border-slate-300">
+                                                <h3 className="text-sm font-bold text-slate-700">İzin Detayları</h3>
+                                            </div>
+                                            <div className="grid grid-cols-2">
+                                                <div className="p-5 border-r border-slate-300 border-b">
+                                                    <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">İzin Başlangıç Tarihi ve Saati</p>
+                                                    <p className="font-bold text-slate-800 text-lg">{formatDisplayDate(veriler.baslangic)}</p>
+                                                </div>
+                                                <div className="p-5 border-b border-slate-300">
+                                                    <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">İşe Dönüş Tarihi ve Saati</p>
+                                                    <p className="font-bold text-slate-800 text-lg">{formatDisplayDate(veriler.bitis)}</p>
+                                                </div>
+                                                <div className="p-5 col-span-2 bg-brand-50 border-b border-slate-300">
+                                                    <p className="text-xs text-brand-700 mb-1 uppercase font-semibold">Toplam İzin Süresi</p>
+                                                    <p className="font-black text-brand-900 text-xl">{sure.includes('Geçersiz') ? '-' : sure}</p>
+                                                </div>
+                                                <div className="p-5 col-span-2">
+                                                    <p className="text-xs text-slate-500 mb-2 uppercase font-semibold">İzin Nedeni / Açıklama</p>
+                                                    <p className="font-medium text-slate-700 whitespace-pre-wrap text-lg min-h-[80px]">
+                                                        {veriler.neden || '............................................................................................................................................................................................................'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-16 grid grid-cols-3 gap-6 text-center">
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-700 mb-16">Talep Eden</p>
+                                                <p className="border-t-2 border-slate-400 pt-2 text-sm font-semibold text-slate-500 mx-4">{veriler.adSoyad || 'Ad Soyad / İmza'}</p>
                                             </div>
                                             <div>
-                                                <h2 className="text-xl font-black text-slate-800 tracking-tight">VTEKE ELEKTRONİK</h2>
-                                                <p className="text-xs text-slate-500 font-medium tracking-widest">İNSAN KAYNAKLARI</p>
+                                                <p className="text-sm font-bold text-slate-700 mb-16">Bölüm Yöneticisi</p>
+                                                <p className="border-t-2 border-slate-400 pt-2 text-sm font-semibold text-slate-500 mx-4">Onay / İmza</p>
                                             </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <h1 className="text-2xl font-black text-slate-800 uppercase tracking-wider">İzin Talep Formu</h1>
-                                            <p className="text-sm text-slate-500 mt-1">Tarih: {simdi.toLocaleDateString('tr-TR')}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mb-8 border border-slate-300 rounded-lg overflow-hidden">
-                                        <div className="bg-slate-100 px-4 py-2 border-b border-slate-300">
-                                            <h3 className="text-sm font-bold text-slate-700">Personel Bilgileri</h3>
-                                        </div>
-                                        <div className="grid grid-cols-2">
-                                            <div className="p-4 border-r border-slate-300">
-                                                <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">Ad Soyad</p>
-                                                <p className="font-bold text-slate-800">{veriler.adSoyad || '........................................'}</p>
-                                            </div>
-                                            <div className="p-4">
-                                                <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">Departman / Bölüm</p>
-                                                <p className="font-bold text-slate-800">{veriler.departman || '........................................'}</p>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-700 mb-16">İnsan Kaynakları</p>
+                                                <p className="border-t-2 border-slate-400 pt-2 text-sm font-semibold text-slate-500 mx-4">Onay / İmza</p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="mb-8 border border-slate-300 rounded-lg overflow-hidden">
-                                        <div className="bg-slate-100 px-4 py-2 border-b border-slate-300">
-                                            <h3 className="text-sm font-bold text-slate-700">İzin Detayları</h3>
-                                        </div>
-                                        <div className="grid grid-cols-2">
-                                            <div className="p-4 border-r border-slate-300 border-b">
-                                                <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">İzin Başlangıç Tarihi ve Saati</p>
-                                                <p className="font-bold text-slate-800">{formatDisplayDate(veriler.baslangic)}</p>
-                                            </div>
-                                            <div className="p-4 border-b border-slate-300">
-                                                <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">İşe Dönüş Tarihi ve Saati</p>
-                                                <p className="font-bold text-slate-800">{formatDisplayDate(veriler.bitis)}</p>
-                                            </div>
-                                            <div className="p-4 col-span-2 bg-brand-50 border-b border-slate-300">
-                                                <p className="text-xs text-brand-700 mb-1 uppercase font-semibold">Toplam İzin Süresi</p>
-                                                <p className="font-black text-brand-900 text-lg">{sure.includes('Geçersiz') ? '-' : sure}</p>
-                                            </div>
-                                            <div className="p-4 col-span-2">
-                                                <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">İzin Nedeni / Açıklama</p>
-                                                <p className="font-medium text-slate-700 whitespace-pre-wrap min-h-[60px]">
-                                                    {veriler.neden || '........................................................................................................................................'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-12 grid grid-cols-3 gap-6 text-center">
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-700 mb-12">Talep Eden</p>
-                                            <p className="border-t border-slate-400 pt-2 text-xs font-semibold text-slate-500">{veriler.adSoyad || 'Ad Soyad / İmza'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-700 mb-12">Bölüm Yöneticisi</p>
-                                            <p className="border-t border-slate-400 pt-2 text-xs font-semibold text-slate-500">Onay / İmza</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-700 mb-12">İnsan Kaynakları</p>
-                                            <p className="border-t border-slate-400 pt-2 text-xs font-semibold text-slate-500">Onay / İmza</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-16 pt-6 border-t border-slate-200 text-center">
-                                        <div className="flex flex-col items-center justify-center">
+                                    {/* التوقيع البرمجي */}
+                                    <div className="mt-auto pt-8">
+                                        <div className="flex flex-col items-center justify-center border-t border-slate-200 pt-4">
                                             <div className="relative w-8 h-8 flex items-center justify-center bg-slate-50 rounded shadow-sm border border-slate-200 mb-2">
                                                 <i className="fa-solid fa-microchip text-slate-300 text-xl"></i>
                                                 <i className="fa-solid fa-atom absolute text-brand-600 text-[10px]"></i>
                                             </div>
-                                            <p className="text-[10px] text-slate-400 font-medium">
+                                            <p className="text-xs text-slate-400 font-medium">
                                                 Bu sistem Mühendis <span className="font-bold text-slate-500">Nuh Almaghrıbı</span> tarafından geliştirilmiştir.
                                             </p>
                                         </div>
