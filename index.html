@@ -1,92 +1,335 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VTEKE ELEKTRONİK - İzin Talep Formu</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>VTEKE ELEKTRONİK • İzin Talep Formu</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com">
+    </script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6',
-                            600: '#2563eb', 800: '#1e40af', 900: '#1e3a8a',
-                        }
-                    }
-                }
-            }
+                        primary: {
+                            50: '#f0f5ff',
+                            100: '#e0ebff',
+                            200: '#b8d4fe',
+                            300: '#7cb4fc',
+                            400: '#4a94f8',
+                            500: '#1a6ff3',
+                            600: '#0d54d4',
+                            700: '#0e40ac',
+                            800: '#11358a',
+                            900: '#142f6e',
+                            950: '#0d1d42',
+                        },
+                        surface: {
+                            50: '#fafbfc',
+                            100: '#f4f6f9',
+                            200: '#e9edf4',
+                            300: '#d5dce8',
+                            400: '#b4c2d6',
+                            500: '#8fa0bf',
+                            600: '#6e7fa3',
+                            700: '#596889',
+                            800: '#4a5570',
+                            900: '#3e465c',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['"Inter"', '"SF Pro Display"', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.7)',
+                        'glass-lg': '0 20px 50px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
+                        'elevated': '0 4px 20px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
+                        'card': '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03), 0 0 0 1px rgba(0,0,0,0.02)',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
+                        'scale-in': 'scaleIn 0.3s cubic-bezier(0.22, 0.61, 0.36, 1)',
+                        'shimmer': 'shimmer 2s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        scaleIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        },
+                    },
+                },
+            },
         }
     </script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js">
+    </script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js">
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js">
+    </script>
+    
+    <!-- html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js">
+    </script>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        :root {
+            --a4-width: 794px;
+            --a4-min-height: 1123px;
+        }
         
-        /* تثبيت صارم لحجم الورقة لمنع تشوه الـ PDF على الموبايل */
-        .a4-fixed {
-            width: 794px !important;
-            min-height: 1123px !important;
-            max-width: none !important;
-            background: white;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: #f6f8fb;
+            background-image: 
+                radial-gradient(ellipse 80% 60% at 50% -20%, rgba(26, 111, 243, 0.04) 0%, transparent 100%),
+                radial-gradient(ellipse 40% 50% at 80% 80%, rgba(13, 84, 212, 0.03) 0%, transparent 100%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* تخصيص شريط التمرير */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* تنسيق الورقة A4 */
+        .a4-sheet {
+            width: var(--a4-width);
+            min-height: var(--a4-min-height);
+            max-width: none;
+            background: #ffffff;
             margin: 0 auto;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+            position: relative;
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+        
+        /* تأثير الظهور التدريجي */
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+        .pulse-subtle {
+            animation: subtlePulse 3s ease-in-out infinite;
+        }
+        
+        /* تحسين مظهر input datetime-local */
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+        
+        /* تأثير التحميل */
+        .shimmer-effect {
+            background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.6) 50%, transparent 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        /* تحسين مظهر الـ modal */
+        .modal-backdrop {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        
+        /* تنسيق الطباعة */
+        @media print {
+            body {
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .a4-sheet {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+            }
+        }
+        
+        /* تحسين للأجهزة اللوحية */
+        @media (max-width: 1024px) {
+            .a4-sheet {
+                width: 100%;
+                min-height: auto;
+            }
         }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 font-sans selection:bg-brand-500 selection:text-white pb-10">
-    
+<body class="min-h-screen text-surface-800 font-sans selection:bg-primary-200 selection:text-primary-900 antialiased">
+
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef, useCallback } = React;
 
-        const InputField = ({ label, name, type="text", icon, value, placeholder, color="brand", onChange }) => (
-            <div>
-                <label className={`block text-xs font-semibold uppercase tracking-wider mb-1.5 text-${color}-700`}>{label}</label>
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i className={`fa-solid ${icon} text-slate-400`}></i>
+        // ============ مكونات فرعية محسنة ============
+        
+        // حقل إدخال محسن بتأثيرات زجاجية
+        const InputField = ({ label, name, type = "text", icon, value, placeholder, color = "primary", onChange, required = false }) => {
+            const [isFocused, setIsFocused] = useState(false);
+            
+            return (
+                <div className="group">
+                    <label className={`block text-[11px] font-semibold uppercase tracking-widest mb-2 transition-colors duration-200
+                        ${isFocused ? 'text-primary-600' : 'text-surface-500'}`}>
+                        {label}
+                        {required && <span className="text-rose-500 ml-0.5">*</span>}
+                    </label>
+                    <div className="relative">
+                        <div className={`absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-all duration-200 z-10
+                            ${isFocused ? 'text-primary-500' : 'text-surface-400'}`}>
+                            <i className={`fa-solid ${icon} text-sm`}></i>
+                        </div>
+                        <input
+                            type={type}
+                            name={name}
+                            value={value}
+                            onChange={onChange}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            placeholder={placeholder}
+                            className={`w-full pl-10 pr-4 py-3 bg-white text-sm rounded-xl border transition-all duration-300 outline-none
+                                placeholder:text-surface-300 placeholder:text-sm
+                                ${isFocused
+                                    ? `border-primary-400 ring-4 ring-primary-500/10 shadow-lg shadow-primary-500/5`
+                                    : 'border-surface-200 shadow-card hover:border-surface-300 hover:shadow-elevated'
+                                }`}
+                        />
+                        {/* شريط تسليط الضوء السفلي */}
+                        <div className={`absolute bottom-0 left-4 right-4 h-[2px] rounded-full transition-all duration-500 ease-out
+                            ${isFocused ? 'bg-primary-500 scale-x-100 opacity-100' : 'bg-transparent scale-x-0 opacity-0'}`}>
+                        </div>
                     </div>
-                    <input 
-                        type={type} name={name} value={value} onChange={onChange} placeholder={placeholder}
-                        className={`w-full pl-10 pr-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm shadow-sm placeholder-slate-400
-                        focus:outline-none focus:border-${color}-500 focus:ring-1 focus:ring-${color}-500 transition-all`}
-                    />
                 </div>
-            </div>
-        );
+            );
+        };
 
+        // حقل نصي متعدد الأسطر
+        const TextareaField = ({ label, name, icon, value, placeholder, onChange }) => {
+            const [isFocused, setIsFocused] = useState(false);
+            
+            return (
+                <div className="group">
+                    <label className={`block text-[11px] font-semibold uppercase tracking-widest mb-2 transition-colors duration-200
+                        ${isFocused ? 'text-primary-600' : 'text-surface-500'}`}>
+                        {label}
+                    </label>
+                    <div className="relative">
+                        <div className={`absolute top-3.5 left-0 pl-3.5 flex items-start pointer-events-none transition-all duration-200 z-10
+                            ${isFocused ? 'text-primary-500' : 'text-surface-400'}`}>
+                            <i className={`fa-solid ${icon} text-sm`}></i>
+                        </div>
+                        <textarea
+                            name={name}
+                            rows="3"
+                            value={value}
+                            onChange={onChange}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            placeholder={placeholder}
+                            className={`w-full pl-10 pr-4 py-3 bg-white text-sm rounded-xl border transition-all duration-300 outline-none resize-none
+                                placeholder:text-surface-300 placeholder:text-sm
+                                ${isFocused
+                                    ? `border-primary-400 ring-4 ring-primary-500/10 shadow-lg shadow-primary-500/5`
+                                    : 'border-surface-200 shadow-card hover:border-surface-300 hover:shadow-elevated'
+                                }`}
+                        ></textarea>
+                        <div className={`absolute bottom-0 left-4 right-4 h-[2px] rounded-full transition-all duration-500 ease-out
+                            ${isFocused ? 'bg-primary-500 scale-x-100 opacity-100' : 'bg-transparent scale-x-0 opacity-0'}`}>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ============ التطبيق الرئيسي ============
         function App() {
-            const simdi = new Date();
-            const yarin = new Date(simdi);
+            const bugun = new Date();
+            const yarin = new Date(bugun);
             yarin.setDate(yarin.getDate() + 1);
+            
+            // ضبط الوقت الافتراضي: 9:00 صباحاً لليوم، 18:00 مساءً لليوم التالي
+            const varsayilanBaslangic = new Date(bugun);
+            varsayilanBaslangic.setHours(9, 0, 0, 0);
+            const varsayilanBitis = new Date(yarin);
+            varsayilanBitis.setHours(18, 0, 0, 0);
 
-            const formatDateTime = (date) => {
-                const tzOffset = date.getTimezoneOffset() * 60000;
-                return (new Date(date - tzOffset)).toISOString().slice(0, 16);
+            const formatDateTimeLocal = (date) => {
+                const yil = date.getFullYear();
+                const ay = String(date.getMonth() + 1).padStart(2, '0');
+                const gun = String(date.getDate()).padStart(2, '0');
+                const saat = String(date.getHours()).padStart(2, '0');
+                const dakika = String(date.getMinutes()).padStart(2, '0');
+                return `${yil}-${ay}-${gun}T${saat}:${dakika}`;
             };
 
             const [veriler, setVeriler] = useState({
                 adSoyad: '',
                 departman: '',
-                baslangic: formatDateTime(simdi),
-                bitis: formatDateTime(yarin),
+                baslangic: formatDateTimeLocal(varsayilanBaslangic),
+                bitis: formatDateTimeLocal(varsayilanBitis),
                 neden: ''
             });
 
             const [sure, setSure] = useState('');
+            const [sureDetay, setSureDetay] = useState({ gun: 0, saat: 0, dakika: 0 });
             const [isGenerating, setIsGenerating] = useState(false);
-            const [previewPdf, setPreviewPdf] = useState(null); // حالة للنافذة المنبثقة الخاصة بالـ PDF
+            const [previewPdf, setPreviewPdf] = useState(null);
+            const [showSuccessToast, setShowSuccessToast] = useState(false);
+            
+            const formRef = useRef(null);
 
+            // حساب المدة
             useEffect(() => {
                 if (veriler.baslangic && veriler.bitis) {
                     const bas = new Date(veriler.baslangic);
@@ -94,295 +337,534 @@
                     const farkMs = bit - bas;
 
                     if (farkMs > 0) {
-                        const saatler = Math.floor(farkMs / (1000 * 60 * 60));
-                        const dakikalar = Math.floor((farkMs % (1000 * 60 * 60)) / (1000 * 60));
+                        const toplamDakika = Math.floor(farkMs / (1000 * 60));
+                        const gunler = Math.floor(toplamDakika / (24 * 60));
+                        const kalanDakika = toplamDakika % (24 * 60);
+                        const saatler = Math.floor(kalanDakika / 60);
+                        const dakikalar = kalanDakika % 60;
                         
-                        if (saatler >= 24) {
-                            const gunler = Math.floor(saatler / 24);
-                            const kalanSaat = saatler % 24;
-                            setSure(`${gunler} Gün, ${kalanSaat} Saat ${dakikalar > 0 ? dakikalar + ' Dk' : ''}`);
-                        } else {
-                            setSure(`${saatler} Saat ${dakikalar > 0 ? dakikalar + ' Dk' : ''}`);
-                        }
+                        setSureDetay({ gun: gunler, saat: saatler, dakika: dakikalar });
+                        
+                        let sureMetni = '';
+                        if (gunler > 0) sureMetni += `${gunler} Gün `;
+                        if (saatler > 0) sureMetni += `${saatler} Saat `;
+                        if (dakikalar > 0) sureMetni += `${dakikalar} Dk`;
+                        if (!sureMetni) sureMetni = '1 Dk';
+                        
+                        setSure(sureMetni.trim());
                     } else {
-                        setSure('Geçersiz Tarih (Bitiş, Başlangıçtan önce olamaz)');
+                        setSure('⚠️ Geçersiz Tarih Aralığı');
+                        setSureDetay({ gun: 0, saat: 0, dakika: 0 });
                     }
                 } else {
                     setSure('Hesaplanıyor...');
+                    setSureDetay({ gun: 0, saat: 0, dakika: 0 });
                 }
             }, [veriler.baslangic, veriler.bitis]);
 
-            const handleChange = (e) => {
+            const handleChange = useCallback((e) => {
                 const { name, value } = e.target;
                 setVeriler(prev => ({ ...prev, [name]: value }));
-            };
+            }, []);
 
+            // تنسيق التاريخ للعرض بالتركية
             const formatDisplayDate = (dateStr) => {
                 if (!dateStr) return '';
-                const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-                return new Date(dateStr).toLocaleDateString('tr-TR', options);
+                const date = new Date(dateStr);
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                };
+                return date.toLocaleDateString('tr-TR', options);
             };
 
-            // الدالة المعدلة لتجهيز الـ PDF وفتح النافذة
+            // دالة توليد PDF محسنة
             const pdfHazirla = async () => {
                 setIsGenerating(true);
                 const element = document.getElementById('izin-formu-alani');
-                const dosyaAdi = `Izin_Talebi_${veriler.adSoyad ? veriler.adSoyad.replace(/\s+/g, '_') : 'Personel'}.pdf`;
+                const guvenliAd = veriler.adSoyad 
+                    ? veriler.adSoyad.replace(/[^a-zA-Z0-9ğüşıöçĞÜŞİÖÇ]/g, '_').replace(/_+/g, '_')
+                    : 'Personel';
+                const dosyaAdi = `Izin_Talebi_${guvenliAd}_${new Date().toISOString().slice(0,10)}.pdf`;
 
                 const opt = {
-                    margin: 5,
+                    margin: [8, 6, 8, 6],
                     filename: dosyaAdi,
-                    image: { type: 'jpeg', quality: 1 },
+                    image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { 
                         scale: 2, 
                         backgroundColor: '#ffffff', 
                         useCORS: true,
-                        scrollY: 0 // لحل مشكلة الفراغ من الأعلى
+                        scrollY: 0,
+                        windowWidth: element.scrollWidth,
+                        windowHeight: element.scrollHeight,
                     },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true,
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
                 };
 
                 try {
-                    const pdfWorker = html2pdf().set(opt).from(element);
-                    await pdfWorker.output('blob').then((pdfBlob) => {
-                        const url = URL.createObjectURL(pdfBlob);
-                        setPreviewPdf({ url, blob: pdfBlob, dosyaAdi });
-                    });
+                    const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+                    const url = URL.createObjectURL(pdfBlob);
+                    setPreviewPdf({ url, blob: pdfBlob, dosyaAdi });
                 } catch (error) {
-                    console.error("Hata:", error);
-                    alert("PDF oluşturulurken bir hata oluştu.");
+                    console.error("PDF oluşturma hatası:", error);
+                    alert("PDF oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
                 } finally {
                     setIsGenerating(false);
                 }
             };
 
-            // وظيفة التنزيل المباشر
-            const indir = () => {
+            // تحميل الملف
+            const indir = useCallback(() => {
+                if (!previewPdf) return;
                 const link = document.createElement('a');
                 link.download = previewPdf.dosyaAdi;
                 link.href = previewPdf.url;
+                document.body.appendChild(link);
                 link.click();
-            };
+                document.body.removeChild(link);
+                setShowSuccessToast(true);
+                setTimeout(() => setShowSuccessToast(false), 3000);
+            }, [previewPdf]);
 
-            // وظيفة المشاركة الفورية المضمونة على الموبايل
-            const paylas = async () => {
+            // مشاركة الملف
+            const paylas = useCallback(async () => {
+                if (!previewPdf?.blob) {
+                    alert("PDF henüz hazır değil.");
+                    return;
+                }
                 const file = new File([previewPdf.blob], previewPdf.dosyaAdi, { type: 'application/pdf' });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
                             files: [file],
-                            title: 'İzin Talep Formu',
-                            text: `${veriler.adSoyad} - İzin Talep Formu`
+                            title: 'İzin Talep Formu - VTEKE',
+                            text: `${veriler.adSoyad || 'Personel'} - İzin Talep Formu`
                         });
+                        setShowSuccessToast(true);
+                        setTimeout(() => setShowSuccessToast(false), 3000);
                     } catch (error) {
-                        console.log('Paylaşım iptal edildi', error);
+                        if (error.name !== 'AbortError') {
+                            console.log('Paylaşım hatası:', error);
+                        }
                     }
                 } else {
-                    alert("Cihazınız doğrudan PDF paylaşımını desteklemiyor. Lütfen indir butonunu kullanın.");
+                    // الرجوع للتحميل إذا لم تكن المشاركة مدعومة
+                    indir();
                 }
-            };
+            }, [previewPdf, veriler.adSoyad, indir]);
+
+            // إغلاق النافذة المنبثقة
+            const closePreview = useCallback(() => {
+                if (previewPdf?.url) {
+                    URL.revokeObjectURL(previewPdf.url);
+                }
+                setPreviewPdf(null);
+            }, [previewPdf]);
+
+            // تنظيف الذاكرة
+            useEffect(() => {
+                return () => {
+                    if (previewPdf?.url) {
+                        URL.revokeObjectURL(previewPdf.url);
+                    }
+                };
+            }, [previewPdf]);
 
             return (
-                <div className="pt-4 md:pt-10 px-4">
+                <div className="pt-6 md:pt-12 px-4 pb-16">
                     
-                    {/* النافذة المنبثقة للمشاركة الفورية */}
+                    {/* ============ نافذة المعاينة المنبثقة ============ */}
                     {previewPdf && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-                            <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl relative flex flex-col items-center animate-fade-in-up">
-                                <button onClick={() => setPreviewPdf(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
-                                    <i className="fa-solid fa-xmark"></i>
+                        <div 
+                            className="fixed inset-0 z-50 flex items-center justify-center p-6 modal-backdrop"
+                            onClick={closePreview}
+                        >
+                            <div 
+                                className="bg-white rounded-3xl p-8 w-full max-w-md shadow-glass-lg relative flex flex-col items-center animate-scale-in border border-white/50"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <button 
+                                    onClick={closePreview} 
+                                    className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center rounded-full bg-surface-100 hover:bg-surface-200 text-surface-500 hover:text-surface-700 transition-all duration-200 hover:scale-110"
+                                >
+                                    <i className="fa-solid fa-xmark text-lg"></i>
                                 </button>
                                 
-                                <i className="fa-solid fa-file-pdf text-6xl text-rose-500 mb-4"></i>
-                                <h3 className="text-xl font-bold text-slate-800 mb-1">PDF Hazır!</h3>
-                                <p className="text-xs text-slate-500 mb-6 text-center font-medium px-4">{previewPdf.dosyaAdi}</p>
+                                <div className="w-20 h-20 bg-gradient-to-br from-rose-500 to-rose-600 rounded-2xl flex items-center justify-center mb-5 shadow-lg shadow-rose-500/25">
+                                    <i className="fa-solid fa-file-pdf text-4xl text-white"></i>
+                                </div>
+                                <h3 className="text-2xl font-bold text-surface-800 mb-1">PDF Hazır! 🎉</h3>
+                                <p className="text-sm text-surface-500 mb-8 text-center font-medium px-4 break-all">
+                                    {previewPdf.dosyaAdi}
+                                </p>
                                 
                                 <div className="flex gap-3 w-full">
-                                    <button onClick={indir} className="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                                    <button 
+                                        onClick={indir} 
+                                        className="flex-1 bg-surface-800 hover:bg-surface-900 text-white font-semibold py-4 px-5 rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
+                                    >
                                         <i className="fa-solid fa-download"></i> İndir
                                     </button>
-                                    {navigator.canShare && (
-                                        <button onClick={paylas} className="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
-                                            <i className="fa-brands fa-whatsapp text-lg"></i> Paylaş
-                                        </button>
-                                    )}
+                                    <button 
+                                        onClick={paylas} 
+                                        className="flex-1 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold py-4 px-5 rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-200 hover:shadow-lg hover:shadow-primary-500/25 hover:-translate-y-0.5 active:translate-y-0"
+                                    >
+                                        <i className="fa-solid fa-share-nodes"></i> Paylaş
+                                    </button>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ============ إشعار النجاح ============ */}
+                    {showSuccessToast && (
+                        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
+                            <div className="bg-surface-900 text-white px-6 py-3.5 rounded-2xl shadow-glass-lg flex items-center gap-3 border border-white/10">
+                                <i className="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+                                <span className="font-medium text-sm">İşlem başarıyla tamamlandı!</span>
                             </div>
                         </div>
                     )}
 
                     <div className="max-w-6xl mx-auto">
                         
-                        <div className="bg-gradient-to-r from-slate-900 to-slate-700 rounded-t-2xl p-6 md:p-8 shadow-lg relative overflow-hidden">
-                            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl"></div>
-                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
-                                <div className="flex items-center gap-4 text-white">
-                                    <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
-                                        <i className="fa-solid fa-file-signature text-3xl"></i>
-                                    </div>
-                                    <div>
-                                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">VTEKE ELEKTRONİK</h1>
-                                        <p className="text-slate-300 font-medium tracking-wide">Personel İzin Talep Sistemi</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white shadow-xl rounded-b-2xl flex flex-col lg:flex-row border border-slate-100 mb-8">
-                            
-                            {/* لوحة التحكم */}
-                            <div className="w-full lg:w-4/12 p-6 md:p-8 lg:border-r border-slate-100 bg-slate-50/50">
-                                <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 border-b border-slate-200 pb-3">
-                                    <i className="fa-solid fa-keyboard text-brand-500"></i> Talep Bilgileri
-                                </h2>
+                        {/* ============ الهيدر ============ */}
+                        <header className="relative mb-8 animate-fade-in">
+                            <div className="bg-gradient-to-br from-surface-900 via-surface-800 to-primary-950 rounded-3xl p-8 md:p-10 shadow-glass-lg relative overflow-hidden border border-white/5">
+                                {/* عناصر زخرفية في الخلفية */}
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+                                <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary-400/8 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4"></div>
+                                <div className="absolute top-1/2 left-1/3 w-32 h-32 bg-white/3 rounded-full blur-2xl"></div>
                                 
-                                <div className="space-y-5">
-                                    <InputField label="Ad Soyad" name="adSoyad" icon="fa-user" placeholder="Örn: Nuh Almaghribi" value={veriler.adSoyad} onChange={handleChange} />
-                                    <InputField label="Departman / Bölüm" name="departman" icon="fa-building-user" placeholder="Örn: Mekatronik Ar-Ge" value={veriler.departman} onChange={handleChange} />
-                                    
-                                    <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                                        <h3 className="text-xs font-bold text-slate-500 uppercase">İzin Süresi</h3>
-                                        <InputField label="İzin Başlangıç Tarihi ve Saati" name="baslangic" type="datetime-local" icon="fa-calendar-minus" value={veriler.baslangic} onChange={handleChange} color="rose" />
-                                        <InputField label="İşe Dönüş Tarihi ve Saati" name="bitis" type="datetime-local" icon="fa-calendar-check" value={veriler.bitis} onChange={handleChange} color="emerald" />
-                                        
-                                        <div className="pt-2">
-                                            <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 flex items-center justify-between">
-                                                <span className="text-sm font-semibold text-slate-600">Hesaplanan Süre:</span>
-                                                <span className="text-sm font-bold text-brand-700">{sure}</span>
+                                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/20 shadow-inner shadow-white/5">
+                                            <div className="relative">
+                                                <i className="fa-solid fa-microchip text-3xl text-white"></i>
+                                                <i className="fa-solid fa-bolt absolute -top-1 -right-1 text-[10px] text-primary-300"></i>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5 text-slate-700">İzin Nedeni / Açıklama</label>
-                                        <div className="relative">
-                                            <div className="absolute top-3 left-0 pl-3 flex items-center pointer-events-none">
-                                                <i className="fa-solid fa-comment-dots text-slate-400"></i>
-                                            </div>
-                                            <textarea 
-                                                name="neden" rows="3" value={veriler.neden} onChange={handleChange} placeholder="İzin alma nedeninizi kısaca açıklayınız..."
-                                                className="w-full pl-10 pr-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all resize-none"
-                                            ></textarea>
-                                        </div>
-                                    </div>
-
-                                    <button 
-                                        onClick={pdfHazirla} 
-                                        disabled={isGenerating}
-                                        className={`w-full mt-4 text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-3 transition-all transform shadow-lg hover:shadow-xl group ${isGenerating ? 'bg-slate-400 cursor-not-allowed' : 'bg-brand-600 hover:bg-brand-700 hover:-translate-y-0.5'}`}>
-                                        {isGenerating ? (
-                                            <><i className="fa-solid fa-spinner fa-spin"></i> İşleniyor...</>
-                                        ) : (
-                                            <><i className="fa-solid fa-file-pdf text-xl"></i> İzin Belgesini Hazırla</>
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* الحاوية التي تسمح بالتمرير على الموبايل لمنع ضغط الورقة */}
-                            <div className="w-full lg:w-8/12 p-4 md:p-8 bg-slate-100 overflow-x-auto">
-                                
-                                {/* ورقة A4 بأبعاد ثابتة تماماً */}
-                                <div id="izin-formu-alani" className="a4-fixed px-10 py-12 flex flex-col justify-between border border-slate-300">
-                                    
-                                    <div>
-                                        <div className="flex justify-between items-center border-b-2 border-slate-800 pb-6 mb-8">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 bg-slate-800 rounded flex items-center justify-center text-white">
-                                                    <i className="fa-solid fa-microchip text-2xl"></i>
-                                                </div>
-                                                <div>
-                                                    <h2 className="text-xl font-black text-slate-800 tracking-tight">VTEKE ELEKTRONİK</h2>
-                                                    <p className="text-xs text-slate-500 font-medium tracking-widest">İNSAN KAYNAKLARI</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <h1 className="text-2xl font-black text-slate-800 uppercase tracking-wider">İzin Talep Formu</h1>
-                                                <p className="text-sm text-slate-500 mt-1">Tarih: {simdi.toLocaleDateString('tr-TR')}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-8 border border-slate-300 rounded-lg overflow-hidden">
-                                            <div className="bg-slate-100 px-4 py-3 border-b border-slate-300">
-                                                <h3 className="text-sm font-bold text-slate-700">Personel Bilgileri</h3>
-                                            </div>
-                                            <div className="grid grid-cols-2">
-                                                <div className="p-5 border-r border-slate-300">
-                                                    <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">Ad Soyad</p>
-                                                    <p className="font-bold text-slate-800 text-lg">{veriler.adSoyad || '..................................................'}</p>
-                                                </div>
-                                                <div className="p-5">
-                                                    <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">Departman / Bölüm</p>
-                                                    <p className="font-bold text-slate-800 text-lg">{veriler.departman || '..................................................'}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-8 border border-slate-300 rounded-lg overflow-hidden">
-                                            <div className="bg-slate-100 px-4 py-3 border-b border-slate-300">
-                                                <h3 className="text-sm font-bold text-slate-700">İzin Detayları</h3>
-                                            </div>
-                                            <div className="grid grid-cols-2">
-                                                <div className="p-5 border-r border-slate-300 border-b">
-                                                    <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">İzin Başlangıç Tarihi ve Saati</p>
-                                                    <p className="font-bold text-slate-800 text-lg">{formatDisplayDate(veriler.baslangic)}</p>
-                                                </div>
-                                                <div className="p-5 border-b border-slate-300">
-                                                    <p className="text-xs text-slate-500 mb-1 uppercase font-semibold">İşe Dönüş Tarihi ve Saati</p>
-                                                    <p className="font-bold text-slate-800 text-lg">{formatDisplayDate(veriler.bitis)}</p>
-                                                </div>
-                                                <div className="p-5 col-span-2 bg-brand-50 border-b border-slate-300">
-                                                    <p className="text-xs text-brand-700 mb-1 uppercase font-semibold">Toplam İzin Süresi</p>
-                                                    <p className="font-black text-brand-900 text-xl">{sure.includes('Geçersiz') ? '-' : sure}</p>
-                                                </div>
-                                                <div className="p-5 col-span-2">
-                                                    <p className="text-xs text-slate-500 mb-2 uppercase font-semibold">İzin Nedeni / Açıklama</p>
-                                                    <p className="font-medium text-slate-700 whitespace-pre-wrap text-lg min-h-[80px]">
-                                                        {veriler.neden || '............................................................................................................................................................................................................'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-16 grid grid-cols-3 gap-6 text-center">
-                                            <div>
-                                                <p className="text-sm font-bold text-slate-700 mb-16">Talep Eden</p>
-                                                <p className="border-t-2 border-slate-400 pt-2 text-sm font-semibold text-slate-500 mx-4">{veriler.adSoyad || 'Ad Soyad / İmza'}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-slate-700 mb-16">Bölüm Yöneticisi</p>
-                                                <p className="border-t-2 border-slate-400 pt-2 text-sm font-semibold text-slate-500 mx-4">Onay / İmza</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-slate-700 mb-16">İnsan Kaynakları</p>
-                                                <p className="border-t-2 border-slate-400 pt-2 text-sm font-semibold text-slate-500 mx-4">Onay / İmza</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* التوقيع البرمجي */}
-                                    <div className="mt-auto pt-8">
-                                        <div className="flex flex-col items-center justify-center border-t border-slate-200 pt-4">
-                                            <div className="relative w-8 h-8 flex items-center justify-center bg-slate-50 rounded shadow-sm border border-slate-200 mb-2">
-                                                <i className="fa-solid fa-microchip text-slate-300 text-xl"></i>
-                                                <i className="fa-solid fa-atom absolute text-brand-600 text-[10px]"></i>
-                                            </div>
-                                            <p className="text-xs text-slate-400 font-medium">
-                                                Bu sistem Mühendis <span className="font-bold text-slate-500">Nuh Almaghrıbı</span> tarafından geliştirilmiştir.
+                                        <div className="text-white">
+                                            <h1 className="text-3xl md:text-4xl font-black tracking-tight">
+                                                VTEKE <span className="text-primary-300">ELEKTRONİK</span>
+                                            </h1>
+                                            <p className="text-surface-400 font-medium tracking-wide mt-1 text-sm md:text-base">
+                                                Personel İzin Talep Sistemi • İnsan Kaynakları
                                             </p>
                                         </div>
                                     </div>
-
+                                    <div className="hidden md:flex items-center gap-3 text-surface-400 text-sm">
+                                        <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                                        <span>Sistem Aktif</span>
+                                    </div>
                                 </div>
                             </div>
+                        </header>
 
+                        {/* ============ المحتوى الرئيسي ============ */}
+                        <div className="bg-white rounded-3xl shadow-glass-lg flex flex-col lg:flex-row border border-surface-100 overflow-hidden animate-slide-up">
+                            
+                            {/* ============ الشريط الجانبي - النموذج ============ */}
+                            <aside className="w-full lg:w-[420px] lg:min-w-[380px] p-6 md:p-8 lg:border-r border-surface-100 bg-gradient-to-b from-surface-50/80 to-white">
+                                <div className="flex items-center gap-3 mb-8">
+                                    <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
+                                        <i className="fa-solid fa-pen-to-square text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg font-bold text-surface-800">Talep Bilgileri</h2>
+                                        <p className="text-xs text-surface-500">Lütfen tüm alanları eksiksiz doldurun</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="space-y-5">
+                                    <InputField 
+                                        label="Ad Soyad" 
+                                        name="adSoyad" 
+                                        icon="fa-user" 
+                                        placeholder="Örn: Ahmet Yılmaz" 
+                                        value={veriler.adSoyad} 
+                                        onChange={handleChange} 
+                                        required 
+                                    />
+                                    <InputField 
+                                        label="Departman / Bölüm" 
+                                        name="departman" 
+                                        icon="fa-building-user" 
+                                        placeholder="Örn: Mekatronik Ar-Ge" 
+                                        value={veriler.departman} 
+                                        onChange={handleChange} 
+                                        required 
+                                    />
+                                    
+                                    {/* قسم التاريخ */}
+                                    <div className="bg-white p-5 rounded-2xl border border-surface-200 shadow-card space-y-4 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-20 h-20 bg-primary-500/3 rounded-full blur-2xl"></div>
+                                        <h3 className="text-xs font-bold text-surface-500 uppercase tracking-widest flex items-center gap-2">
+                                            <i className="fa-solid fa-clock text-primary-500"></i> İzin Süresi
+                                        </h3>
+                                        <InputField 
+                                            label="İzin Başlangıç Tarihi ve Saati" 
+                                            name="baslangic" 
+                                            type="datetime-local" 
+                                            icon="fa-calendar-minus" 
+                                            value={veriler.baslangic} 
+                                            onChange={handleChange} 
+                                            color="rose" 
+                                        />
+                                        <InputField 
+                                            label="İşe Dönüş Tarihi ve Saati" 
+                                            name="bitis" 
+                                            type="datetime-local" 
+                                            icon="fa-calendar-check" 
+                                            value={veriler.bitis} 
+                                            onChange={handleChange} 
+                                            color="emerald" 
+                                        />
+                                        
+                                        {/* ملخص المدة */}
+                                        <div className="pt-2">
+                                            <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-4 rounded-xl border border-primary-100/60">
+                                                <p className="text-[11px] font-semibold text-primary-600 uppercase tracking-wider mb-1">
+                                                    Hesaplanan Süre
+                                                </p>
+                                                <p className="text-2xl font-black text-primary-800">
+                                                    {sure}
+                                                </p>
+                                                {sureDetay.gun > 0 && (
+                                                    <div className="flex gap-3 mt-2 text-xs text-primary-500 font-medium">
+                                                        <span>{sureDetay.gun} Gün</span>
+                                                        <span>{sureDetay.saat} Saat</span>
+                                                        {sureDetay.dakika > 0 && <span>{sureDetay.dakika} Dk</span>}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <TextareaField 
+                                        label="İzin Nedeni / Açıklama" 
+                                        name="neden" 
+                                        icon="fa-comment-dots" 
+                                        placeholder="İzin alma nedeninizi kısaca açıklayınız..." 
+                                        value={veriler.neden} 
+                                        onChange={handleChange} 
+                                    />
+
+                                    {/* زر الإجراء */}
+                                    <button 
+                                        onClick={pdfHazirla} 
+                                        disabled={isGenerating}
+                                        className={`w-full mt-6 text-white font-bold py-4.5 px-6 rounded-2xl flex items-center justify-center gap-3 transition-all duration-300 transform shadow-lg text-base
+                                            ${isGenerating 
+                                                ? 'bg-surface-400 cursor-not-allowed' 
+                                                : 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 hover:shadow-xl hover:shadow-primary-500/20 hover:-translate-y-0.5 active:translate-y-0 active:shadow-md'
+                                            }`}
+                                    >
+                                        {isGenerating ? (
+                                            <>
+                                                <i className="fa-solid fa-spinner fa-spin text-lg"></i>
+                                                <span>PDF Oluşturuluyor...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className="fa-solid fa-file-pdf text-xl"></i>
+                                                <span>İzin Belgesini Hazırla</span>
+                                                <i className="fa-solid fa-arrow-right ml-1"></i>
+                                            </>
+                                        )}
+                                    </button>
+                                    
+                                    {/* تلميح */}
+                                    <p className="text-[11px] text-surface-400 text-center mt-2">
+                                        Oluşturulan PDF dosyasını indirebilir veya paylaşabilirsiniz
+                                    </p>
+                                </div>
+                            </aside>
+
+                            {/* ============ منطقة المعاينة ============ */}
+                            <main className="w-full lg:flex-1 p-4 md:p-8 bg-surface-100/60 overflow-x-auto flex items-start justify-center">
+                                <div className="min-w-fit lg:min-w-0">
+                                    <p className="text-[11px] text-surface-400 text-center mb-3 font-medium uppercase tracking-wider">
+                                        Önizleme • A4 Formatı
+                                    </p>
+                                    
+                                    {/* ورقة A4 */}
+                                    <div 
+                                        id="izin-formu-alani" 
+                                        className="a4-sheet px-12 py-14 flex flex-col justify-between"
+                                        ref={formRef}
+                                    >
+                                        {/* محتوى الورقة */}
+                                        <div>
+                                            {/* رأس الورقة */}
+                                            <div className="flex justify-between items-start border-b-2 border-surface-800 pb-7 mb-8">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-14 h-14 bg-surface-900 rounded-xl flex items-center justify-center text-white shadow-sm">
+                                                        <i className="fa-solid fa-microchip text-2xl"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h2 className="text-2xl font-black text-surface-800 tracking-tight leading-tight">
+                                                            VTEKE<br/>ELEKTRONİK
+                                                        </h2>
+                                                        <p className="text-[10px] text-surface-500 font-semibold tracking-[0.2em] uppercase mt-0.5">
+                                                            İnsan Kaynakları
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="inline-block bg-surface-900 text-white px-4 py-2 rounded-lg mb-2">
+                                                        <h1 className="text-lg font-black uppercase tracking-wider">
+                                                            İzin Talep Formu
+                                                        </h1>
+                                                    </div>
+                                                    <p className="text-xs text-surface-500">
+                                                        Tarih: {bugun.toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* معلومات الموظف */}
+                                            <div className="mb-7 border-2 border-surface-200 rounded-xl overflow-hidden">
+                                                <div className="bg-surface-100 px-5 py-3.5 border-b-2 border-surface-200">
+                                                    <h3 className="text-sm font-bold text-surface-700 flex items-center gap-2">
+                                                        <i className="fa-solid fa-id-card text-surface-500"></i> Personel Bilgileri
+                                                    </h3>
+                                                </div>
+                                                <div className="grid grid-cols-2 divide-x-2 divide-surface-200">
+                                                    <div className="p-5">
+                                                        <p className="text-[10px] text-surface-500 mb-1.5 uppercase font-bold tracking-wider">
+                                                            Ad Soyad
+                                                        </p>
+                                                        <p className="font-bold text-surface-800 text-base min-h-[24px]">
+                                                            {veriler.adSoyad || '............................................'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="p-5">
+                                                        <p className="text-[10px] text-surface-500 mb-1.5 uppercase font-bold tracking-wider">
+                                                            Departman / Bölüm
+                                                        </p>
+                                                        <p className="font-bold text-surface-800 text-base min-h-[24px]">
+                                                            {veriler.departman || '............................................'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* تفاصيل الإذن */}
+                                            <div className="mb-7 border-2 border-surface-200 rounded-xl overflow-hidden">
+                                                <div className="bg-surface-100 px-5 py-3.5 border-b-2 border-surface-200">
+                                                    <h3 className="text-sm font-bold text-surface-700 flex items-center gap-2">
+                                                        <i className="fa-solid fa-calendar-days text-surface-500"></i> İzin Detayları
+                                                    </h3>
+                                                </div>
+                                                <div className="grid grid-cols-2 divide-x-2 divide-surface-200">
+                                                    <div className="p-5 border-b-2 border-surface-200">
+                                                        <p className="text-[10px] text-surface-500 mb-1.5 uppercase font-bold tracking-wider">
+                                                            Başlangıç Tarihi ve Saati
+                                                        </p>
+                                                        <p className="font-bold text-surface-800 text-sm">
+                                                            {formatDisplayDate(veriler.baslangic) || '....................................'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="p-5 border-b-2 border-surface-200">
+                                                        <p className="text-[10px] text-surface-500 mb-1.5 uppercase font-bold tracking-wider">
+                                                            İşe Dönüş Tarihi ve Saati
+                                                        </p>
+                                                        <p className="font-bold text-surface-800 text-sm">
+                                                            {formatDisplayDate(veriler.bitis) || '....................................'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="p-5 col-span-2 bg-primary-50/60 border-b-2 border-surface-200">
+                                                        <p className="text-[10px] text-primary-600 mb-1.5 uppercase font-bold tracking-wider">
+                                                            Toplam İzin Süresi
+                                                        </p>
+                                                        <p className="font-black text-primary-900 text-xl">
+                                                            {sure.includes('Geçersiz') ? '—' : sure}
+                                                        </p>
+                                                    </div>
+                                                    <div className="p-5 col-span-2">
+                                                        <p className="text-[10px] text-surface-500 mb-2 uppercase font-bold tracking-wider">
+                                                            İzin Nedeni / Açıklama
+                                                        </p>
+                                                        <p className="font-medium text-surface-700 whitespace-pre-wrap text-sm leading-relaxed min-h-[70px]">
+                                                            {veriler.neden || '.........................................................................................................................................'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* منطقة التوقيعات */}
+                                            <div className="mt-16 grid grid-cols-3 gap-8 text-center">
+                                                <div>
+                                                    <p className="text-sm font-bold text-surface-700 mb-16">Talep Eden</p>
+                                                    <div className="border-t-2 border-surface-400 pt-3 mx-2">
+                                                        <p className="text-xs font-semibold text-surface-500">
+                                                            {veriler.adSoyad || 'Ad Soyad / İmza'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-surface-700 mb-16">Bölüm Yöneticisi</p>
+                                                    <div className="border-t-2 border-surface-400 pt-3 mx-2">
+                                                        <p className="text-xs font-semibold text-surface-500">Onay / İmza</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-surface-700 mb-16">İnsan Kaynakları</p>
+                                                    <div className="border-t-2 border-surface-400 pt-3 mx-2">
+                                                        <p className="text-xs font-semibold text-surface-500">Onay / İmza</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* تذييل الورقة */}
+                                        <div className="mt-auto pt-10">
+                                            <div className="flex flex-col items-center justify-center border-t border-surface-200 pt-5">
+                                                <div className="relative w-9 h-9 flex items-center justify-center bg-surface-50 rounded-lg shadow-sm border border-surface-200 mb-2.5">
+                                                    <i className="fa-solid fa-microchip text-surface-300 text-xl"></i>
+                                                    <i className="fa-solid fa-code absolute text-primary-600 text-[9px] -bottom-1 -right-1 bg-white rounded-full p-0.5"></i>
+                                                </div>
+                                                <p className="text-[10px] text-surface-400 font-medium text-center">
+                                                    Bu sistem <span className="font-bold text-surface-500">Mühendis Nuh Almaghribi</span> tarafından geliştirilmiştir.
+                                                </p>
+                                                <p className="text-[9px] text-surface-300 mt-0.5">
+                                                    © {new Date().getFullYear()} VTEKE Elektronik • Tüm hakları saklıdır
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </main>
                         </div>
+                        
+                        {/* تذييل الصفحة */}
+                        <footer className="text-center mt-8 text-xs text-surface-400 animate-fade-in">
+                            <p>
+                                <i className="fa-solid fa-shield-halved text-primary-400 mr-1.5"></i>
+                                Güvenli & Şifreli Bağlantı • VTEKE Elektronik İK Sistemi v2.0
+                            </p>
+                        </footer>
                     </div>
                 </div>
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
+        // ============ تهيئة التطبيق ============
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
         root.render(<App />);
     </script>
 </body>
